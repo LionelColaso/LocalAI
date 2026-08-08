@@ -861,6 +861,11 @@ func (uri URI) DownloadFileWithContext(ctx context.Context, filePath, sha string
 		)
 	}
 
+	// Windows cannot move a file that still has an open handle: Go opens files
+	// without FILE_SHARE_DELETE, so MoveFileEx fails with a sharing violation
+	// while outFile is live. Close it before promoting the partial.
+	_ = outFile.Close()
+
 	err = os.Rename(tmpFilePath, filePath)
 	if err != nil {
 		return fmt.Errorf("failed to rename temporary file %s -> %s: %v", tmpFilePath, filePath, err)

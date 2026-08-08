@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -250,6 +251,16 @@ func (ml *ModelLoader) startProcess(grpcProcess, id string, serverAddress string
 	workDir, err := filepath.Abs(filepath.Dir(grpcProcess))
 	if err != nil {
 		return nil, err
+	}
+
+	// A Windows host spawns a real executable, not the POSIX launcher the
+	// gallery contract names (run.sh). Windows backend images ship both: the
+	// run.sh stub keeps discovery, validation and upgrades uniform, while
+	// run.exe is the PE binary os.StartProcess actually starts.
+	if runtime.GOOS == "windows" {
+		if _, err := os.Stat(filepath.Join(workDir, "run.exe")); err == nil {
+			grpcProcess = filepath.Join(workDir, "run.exe")
+		}
 	}
 
 	env := os.Environ()
