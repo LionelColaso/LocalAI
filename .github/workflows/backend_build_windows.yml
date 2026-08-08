@@ -100,6 +100,9 @@ jobs:
             # loads it dynamically, so it is never a hard import.
             mingw-w64-ucrt-x86_64-vulkan-headers
             mingw-w64-ucrt-x86_64-vulkan-loader
+            # SPIRV-Headers cmake package for ggml-vulkan's
+            # find_package(SPIRV-Headers CONFIG REQUIRED).
+            mingw-w64-ucrt-x86_64-spirv-headers
             mingw-w64-x86_64-shaderc
 
       # Run steps that need bash/msys2 tools (make, ccache, grep) declare

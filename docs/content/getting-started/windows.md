@@ -96,11 +96,12 @@ firewall on first run when prompted.
 See `scripts/build/llama-cpp-windows.sh` and the Makefile target
 `backends/llama-cpp-windows` if you want to rebuild the Windows backend image
 locally. The target is re-runnable: an interrupted build can simply be run
-again (the script re-arms its source clones, and ccache keeps rebuilds fast).
+again (the script re-arms its source clones, and the long gRPC build tree is
+reused between runs).
 The build requires an MSYS2 UCRT64 environment with mingw-w64 GCC,
 CMake 4.x, Ninja, the Vulkan headers/loader and glslc (see below), and Go
-(to build the `run.exe` launcher; it must be reachable from the MSYS2 shell
-via `GOROOT`, `GO_TOOLCHAIN_ROOT`, or `PATH`).
+(to build the `run.exe` launcher; it must be reachable via `GOROOT`,
+`GO_TOOLCHAIN_ROOT`, or `PATH`).
 
 ### Setting up MSYS2 UCRT64
 
@@ -109,26 +110,33 @@ via `GOROOT`, `GO_TOOLCHAIN_ROOT`, or `PATH`).
 3. Install the build toolchain:
 
 ```bash
-pacman -S --needed --noconfirm base-devel git cmake ninja mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-vulkan-headers mingw-w64-ucrt-x86_64-vulkan-loader mingw-w64-x86_64-shaderc
+pacman -S --needed --noconfirm base-devel git cmake ninja mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-vulkan-headers mingw-w64-ucrt-x86_64-vulkan-loader mingw-w64-ucrt-x86_64-spirv-headers mingw-w64-x86_64-shaderc
 ```
 
 The Vulkan packages are required: `GGML_VULKAN=ON` makes CMake's `FindVulkan`
-treat `glslc` as a REQUIRED component. MSYS2 ships glslc only in the mingw64
-variant of `shaderc` (there is no ucrt64 build) — it is a standalone tool, so
-the build script adds `/mingw64/bin` to `PATH` when no glslc is already
-available (e.g. from a Vulkan SDK installed via the registry).
+treat `glslc` as a REQUIRED component, and ggml-vulkan runs
+`find_package(SPIRV-Headers CONFIG REQUIRED)`. MSYS2 ships glslc only in the
+mingw64 variant of `shaderc` (there is no ucrt64 build) — it is a standalone
+tool, so the build script adds `/mingw64/bin` to `PATH` when no glslc is
+already available (e.g. from a Vulkan SDK installed via the registry). The
+script also installs `mingw-w64-ucrt-x86_64-spirv-headers` itself if its cmake
+config is missing, so the docs' package list is only a head start.
 
-4. Navigate to your LocalAI checkout and run the build script:
+4. Run the build. From a plain Windows shell (PowerShell, `cmd`, or Git bash)
+   the script detects that it is not under MSYS2 and re-executes itself under
+   an MSYS2 UCRT64 login shell automatically — no need to open the UCRT64
+   terminal yourself:
+
+```powershell
+cd C:\source_path\LocalAI
+make backends/llama-cpp-windows
+```
+
+   Inside the MSYS2 UCRT64 terminal the script runs directly:
 
 ```bash
 cd /source_path/LocalAI
 bash scripts/build/llama-cpp-windows.sh
-```
-
-Or from the Makefile:
-
-```bash
-make backends/llama-cpp-windows
 ```
 
 The script packages the result as an OCI tarball (`backend-images/llama-cpp.tar`)

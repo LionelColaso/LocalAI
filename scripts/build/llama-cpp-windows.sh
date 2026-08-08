@@ -25,6 +25,52 @@
 
 set -ex
 
+# ---------------------------------------------------------------------------
+# Auto-dispatch into MSYS2 (UCRT64).
+#
+# `make backends/llama-cpp-windows` runs this script through the recipe shell.
+# GNU make for Windows falls back to cmd.exe unless it finds sh; the Makefile's
+# OS-detection block (top of file) then points SHELL at Git for Windows' sh, so
+# a local run normally starts under a MINGW64 bash. That bash cannot resolve
+# /ucrt64/bin (the path maps to C:\Program Files\Git\ucrt64, which does not
+# exist) and nothing below can build without it. Re-exec under the real MSYS2
+# bash instead. A non-login invocation deliberately keeps the inherited working
+# directory (the repo root) and the Windows PATH (Go, Git); `bash -l` would
+# reset PATH and cd to $HOME. MSYSTEM is not a usable discriminator here (Git
+# bash reports MINGW64 too) - the existence of /ucrt64/bin under MSYS2's own
+# runtime is the discriminator.
+if [ ! -d /ucrt64/bin ]; then
+  if [ -x /c/msys64/usr/bin/bash.exe ]; then
+    echo "==> not running under MSYS2; re-exec'ing under C:/msys64 ..." >&2
+    SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+    REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
+    # Run the script by name, not `exec bash "$0"`: a bare `bash` here would
+    # resolve to Git for Windows' bash via the inherited PATH (re-dispatch loop);
+    # the shebang's /bin/bash is an absolute MSYS2 path and lands on the real
+    # MSYS2 bash, where the /ucrt64/bin check below takes the direct branch.
+    #
+    # Mirror msys2_shell.cmd -ucrt64 -use-full-path: a LOGIN bash with
+    # MSYSTEM=UCRT64 + MSYS2_PATH_TYPE=inherit. This is the one configuration in
+    # which MSYS2's own git works when launched from a foreign shell (a plain
+    # non-login `bash.exe -c` inherits the Git-for-Windows mount table and its
+    # https remote helper dies with "fatal: remote helper 'https' aborted
+    # session"). `bash -l` resets PATH to MSYS2 defaults and drops `go` (it is
+    # on the Windows PATH but GOROOT is unset), so re-add the bin dir that the
+    # invoking shell resolved before the profile runs.
+    GO_DIR=$(command -v go 2>/dev/null)
+    [ -n "$GO_DIR" ] && GO_DIR=$(dirname "$GO_DIR")
+    # The login profile rebuilds the environment from a whitelist and drops
+    # Windows vars the MSYS2 runtime does not know (USERPROFILE etc.), so
+    # carry the ones go/ccache need over from the invoking shell.
+    exec env MSYSTEM=UCRT64 MSYS2_PATH_TYPE=inherit /c/msys64/usr/bin/bash.exe -l -c \
+      "export PATH='$GO_DIR':\$PATH; export USERPROFILE='$USERPROFILE'; cd '$REPO_ROOT' && exec ./scripts/build/llama-cpp-windows.sh"
+  else
+    echo "ERROR: this script must run under MSYS2 UCRT64 (C:\\msys64)." >&2
+    echo "       Install MSYS2 (winget install MSYS2.MSYS2) and retry 'make backends/llama-cpp-windows'." >&2
+    exit 1
+  fi
+fi
+
 ROOT=$(pwd)
 IMAGE_NAME="${IMAGE_NAME:-localai/llama-cpp-windows}"
 PLATFORMARCH="${PLATFORMARCH:-windows/amd64}"
@@ -44,14 +90,40 @@ export JOBS
 # changes.
 export PATH="/ucrt64/bin:$PATH"
 
+# The MSYS2 runtime does not export PROCESSOR_ARCHITECTURE, so cmake's Windows
+# host detection yields an empty CMAKE_SYSTEM_PROCESSOR and ggml treats the
+# machine as UNKNOWN (GGML_CPU_ALL_VARIANTS then refuses to configure). This
+# backend is x86_64-only.
+export PROCESSOR_ARCHITECTURE=AMD64
+
+# go.exe resolves GOPATH (default %USERPROFILE%\go) and its build cache
+# (%LocalAppData%\go-build) through Windows env vars the login profile drops;
+# ccache needs a user-profile dir too. Fall back to the MSYS2 home for direct
+# launches that forgot to set it.
+export USERPROFILE="${USERPROFILE:-$(cygpath -w "$HOME")}"
+export GOCACHE="${GOCACHE:-$(cygpath -w "$HOME")/go-build}"
+mkdir -p "$GOCACHE"
+
 # ggml-vulkan compiles its shaders at build time with glslc, and CMake's
 # FindVulkan declares it a REQUIRED component. MSYS2 only ships glslc in the
 # mingw64 variant of shaderc (there is no ucrt64 build); it is a standalone
 # tool, so its prefix can sit next to the UCRT64 one. When a Vulkan SDK
 # (VULKAN_SDK, found by FindVulkan through the registry on Windows) already
 # provides glslc, leave PATH alone.
+#
+# The mingw64 dir must be APPENDED, never prepended: the UCRT64-built tools
+# (protoc, gcc, ...) resolve their runtime DLLs through PATH, and a mingw64
+# libstdc++/libgcc_s_seh placed ahead of /ucrt64/bin makes them load the wrong
+# ABI runtime and die silently (protoc exits 127 mid-build).
 if ! command -v glslc >/dev/null 2>&1 && [ -x /mingw64/bin/glslc.exe ]; then
-  export PATH="/mingw64/bin:$PATH"
+  export PATH="$PATH:/mingw64/bin"
+fi
+
+# ggml-vulkan runs find_package(SPIRV-Headers CONFIG REQUIRED) at configure
+# time; MSYS2 ships the config as mingw-w64-ucrt-x86_64-spirv-headers.
+if [ ! -f /ucrt64/share/cmake/SPIRV-Headers/SPIRV-HeadersConfig.cmake ]; then
+  echo "==> SPIRV-Headers cmake config missing, installing mingw-w64-ucrt-x86_64-spirv-headers"
+  pacman -S --noconfirm mingw-w64-ucrt-x86_64-spirv-headers
 fi
 
 # actions/setup-go adds go to the runner PATH but only exports GOROOT for Go
@@ -561,6 +633,12 @@ git remote add origin https://github.com/ggerganov/llama.cpp
 # without downloading the full llama.cpp history on every build.
 git fetch origin "$LLAMA_VERSION" --depth 1
 git checkout -q -B build "$LLAMA_VERSION"
+# prepare.sh patches the source tree in place; re-running against the same
+# commit would otherwise find the patch already applied and fail. Restore the
+# pristine tree (tracked edits, untracked .rej/.orig and the generated
+# tools/grpc-server staging dir).
+git reset -q --hard
+git clean -qfd
 git submodule update --init --recursive --depth 1 --single-branch
 cd "$ROOT/backend/cpp/llama-cpp"
 bash prepare.sh
@@ -572,6 +650,10 @@ build_variant() {
   local name="$1"
   local targets="$2"
   shift 2
+  # ggml turns ccache on when it finds it, but on MSYS2 ccache wants
+  # Windows-style USERPROFILE/LOCALAPPDATA the login profile drops - disable
+  # it (the variant builds are from scratch anyway).
+  rm -rf "llama.cpp/build-${name}"
   cmake -G "Unix Makefiles" \
     -S llama.cpp -B "llama.cpp/build-${name}" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -585,6 +667,7 @@ build_variant() {
     -DLLAMA_OPENSSL=OFF \
     -DLLAMA_CURL=OFF \
     -DBUILD_SHARED_LIBS=OFF \
+    -DGGML_CCACHE=OFF \
     "$@" \
     $ADDED_CMAKE_ARGS
   cmake --build "llama.cpp/build-${name}" --config Release -j "$JOBS" --target $targets
