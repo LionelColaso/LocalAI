@@ -13,11 +13,9 @@ jobs:
     outputs:
       matrix-multiarch: ${{ steps.set-matrix.outputs['matrix-multiarch'] }}
       matrix-darwin: ${{ steps.set-matrix.outputs['matrix-darwin'] }}
-      matrix-windows: ${{ steps.set-matrix.outputs['matrix-windows'] }}
       merge-matrix-multiarch: ${{ steps.set-matrix.outputs['merge-matrix-multiarch'] }}
       has-backends-multiarch: ${{ steps.set-matrix.outputs['has-backends-multiarch'] }}
       has-backends-darwin: ${{ steps.set-matrix.outputs['has-backends-darwin'] }}
-      has-backends-windows: ${{ steps.set-matrix.outputs['has-backends-windows'] }}
       has-merges-multiarch: ${{ steps.set-matrix.outputs['has-merges-multiarch'] }}
       # Single-arch backends are sharded across SINGLEARCH_SHARDS matrix jobs to
       # stay under GitHub's 256-jobs-per-matrix limit (see changed-backends.js).
