@@ -23,19 +23,22 @@
     - CUDA
     - HIP
   capabilities:
-    amd: rocm-llama-cpp
-    default: cpu-llama-cpp
-    intel: intel-sycl-f16-llama-cpp
-    metal: metal-llama-cpp
-    nvidia: cuda12-llama-cpp
-    nvidia-cuda-12: cuda12-llama-cpp
-    nvidia-cuda-13: cuda13-llama-cpp
-    nvidia-l4t: nvidia-l4t-arm64-llama-cpp
-    nvidia-l4t-cuda-12: nvidia-l4t-arm64-llama-cpp
-    nvidia-l4t-cuda-13: cuda13-nvidia-l4t-arm64-llama-cpp
-    vulkan: vulkan-llama-cpp
-- name: ik-llama-cpp
-  alias: ik-llama-cpp
+
+    default: "cpu-llama-cpp"
+    nvidia: "cuda12-llama-cpp"
+    intel: "intel-sycl-f16-llama-cpp"
+    amd: "rocm-llama-cpp"
+    metal: "metal-llama-cpp"
+    windows: "windows-llama-cpp"
+    vulkan: "vulkan-llama-cpp"
+    nvidia-l4t: "nvidia-l4t-arm64-llama-cpp"
+    nvidia-cuda-13: "cuda13-llama-cpp"
+    nvidia-cuda-12: "cuda12-llama-cpp"
+    nvidia-l4t-cuda-12: "nvidia-l4t-arm64-llama-cpp"
+    nvidia-l4t-cuda-13: "cuda13-nvidia-l4t-arm64-llama-cpp"
+- &ikllamacpp
+  name: "ik-llama-cpp"
+  alias: "ik-llama-cpp"
   license: mit
   description: |
     Fork of llama.cpp optimized for CPU performance by ikawrakow
@@ -3145,28 +3148,21 @@
     - CUDA
     - HIP
   capabilities:
-    amd: rocm-llama-cpp-development
-    default: cpu-llama-cpp-development
-    intel: intel-sycl-f16-llama-cpp-development
-    metal: metal-llama-cpp-development
-    nvidia: cuda12-llama-cpp-development
-    nvidia-cuda-12: cuda12-llama-cpp-development
-    nvidia-cuda-13: cuda13-llama-cpp-development
-    nvidia-l4t: nvidia-l4t-arm64-llama-cpp-development
-    nvidia-l4t-cuda-12: nvidia-l4t-arm64-llama-cpp-development
-    nvidia-l4t-cuda-13: cuda13-nvidia-l4t-arm64-llama-cpp-development
-    vulkan: vulkan-llama-cpp-development
-- name: ik-llama-cpp-development
-  alias: ik-llama-cpp
-  license: mit
-  description: |
-    Fork of llama.cpp optimized for CPU performance by ikawrakow
-  urls:
-    - https://github.com/ikawrakow/ik_llama.cpp
-  tags:
-    - text-to-text
-    - LLM
-    - CPU
+
+    default: "cpu-llama-cpp-development"
+    nvidia: "cuda12-llama-cpp-development"
+    intel: "intel-sycl-f16-llama-cpp-development"
+    amd: "rocm-llama-cpp-development"
+    metal: "metal-llama-cpp-development"
+    windows: "windows-llama-cpp-development"
+    vulkan: "vulkan-llama-cpp-development"
+    nvidia-l4t: "nvidia-l4t-arm64-llama-cpp-development"
+    nvidia-cuda-13: "cuda13-llama-cpp-development"
+    nvidia-cuda-12: "cuda12-llama-cpp-development"
+    nvidia-l4t-cuda-12: "nvidia-l4t-arm64-llama-cpp-development"
+    nvidia-l4t-cuda-13: "cuda13-nvidia-l4t-arm64-llama-cpp-development"
+- !!merge <<: *ikllamacpp
+  name: "ik-llama-cpp-development"
   capabilities:
     default: cpu-ik-llama-cpp-development
 - name: turboquant-development
@@ -5967,37 +5963,20 @@
   uri: quay.io/go-skynet/local-ai-backends:master-metal-darwin-arm64-llama-cpp
   mirrors:
     - localai/localai-backends:master-metal-darwin-arm64-llama-cpp
-- name: cuda12-llama-cpp-development
-  alias: llama-cpp
-  license: mit
-  icon: https://user-images.githubusercontent.com/1991296/230134379-7181e485-c521-4d23-a0d6-f7b3b61ba524.png
-  description: |
-    LLM inference in C/C++
-  urls:
-    - https://github.com/ggerganov/llama.cpp
-  tags:
-    - text-to-text
-    - text-to-speech
-    - TTS
-    - LLM
-    - CPU
-    - GPU
-    - Metal
-    - CUDA
-    - HIP
-  capabilities:
-    amd: rocm-llama-cpp
-    default: cpu-llama-cpp
-    intel: intel-sycl-f16-llama-cpp
-    metal: metal-llama-cpp
-    nvidia: cuda12-llama-cpp
-    nvidia-cuda-12: cuda12-llama-cpp
-    nvidia-cuda-13: cuda13-llama-cpp
-    nvidia-l4t: nvidia-l4t-arm64-llama-cpp
-    nvidia-l4t-cuda-12: nvidia-l4t-arm64-llama-cpp
-    nvidia-l4t-cuda-13: cuda13-nvidia-l4t-arm64-llama-cpp
-    vulkan: vulkan-llama-cpp
-  uri: quay.io/go-skynet/local-ai-backends:master-gpu-nvidia-cuda-12-llama-cpp
+
+- !!merge <<: *llamacpp
+  name: "windows-llama-cpp"
+  uri: "quay.io/go-skynet/local-ai-backends:latest-windows-amd64-llama-cpp"
+  mirrors:
+    - localai/localai-backends:latest-windows-amd64-llama-cpp
+- !!merge <<: *llamacpp
+  name: "windows-llama-cpp-development"
+  uri: "quay.io/go-skynet/local-ai-backends:master-windows-amd64-llama-cpp"
+  mirrors:
+    - localai/localai-backends:master-windows-amd64-llama-cpp
+- !!merge <<: *llamacpp
+  name: "cuda12-llama-cpp-development"
+  uri: "quay.io/go-skynet/local-ai-backends:master-gpu-nvidia-cuda-12-llama-cpp"
   mirrors:
     - localai/localai-backends:master-gpu-nvidia-cuda-12-llama-cpp
 - name: rocm-llama-cpp-development

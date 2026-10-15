@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/mudler/LocalAI/core/services/addons/apps"
@@ -595,7 +594,7 @@ func (m *Manager) cleanStages() error {
 				return nil
 			}
 			// Descriptor chmod avoids following a link swapped in after WalkDir.
-			f, err := root.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_DIRECTORY, 0)
+			f, err := root.OpenFile(path, os.O_RDONLY, 0)
 			if err != nil {
 				return err
 			}

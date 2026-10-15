@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"syscall"
 )
 
 // OwnerConfig is deployment configuration, never request-supplied authority.
@@ -58,18 +57,18 @@ func (g OwnerGuard) Acquire(ctx context.Context) (func() error, error) {
 	if !info.IsDir() || info.Mode().Perm()&0077 != 0 {
 		return nil, ErrConfiguration
 	}
-	f, e := os.OpenFile(filepath.Join(c.Root, "owner.lock"), os.O_CREATE|os.O_RDWR|syscall.O_NOFOLLOW, 0600)
+	f, e := os.OpenFile(filepath.Join(c.Root, "owner.lock"), os.O_CREATE|os.O_RDWR, 0600)
 	if e != nil {
 		return nil, e
 	}
-	if e = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB); e != nil {
+	if e = lockFile(f); e != nil {
 		_ = f.Close()
 		return nil, ErrOwnerBusy
 	}
 	var once sync.Once
 	var releaseErr error
 	release := func() error {
-		once.Do(func() { releaseErr = errors.Join(syscall.Flock(int(f.Fd()), syscall.LOCK_UN), f.Close()) })
+		once.Do(func() { releaseErr = errors.Join(unlockFile(f), f.Close()) })
 		return releaseErr
 	}
 	// The address is runtime configuration and a frontend may reach the owner at
