@@ -564,7 +564,7 @@
   files:
     - filename: ds4flash.gguf
       uri: https://huggingface.co/unsloth/DeepSeek-V4-Flash-Vision-Exp-GGUF
-      sha256: a4563e2f0bcfe43375a36043b57feb424066a13a40e6f9137ea6d3c68c086eaa
+      sha256: 8b6734c09f93ac69e429ecd82ec2d6216549cc08bc5ccbf4f78c1d57a0f50acf
 - name: qwopus3.8-27b-flash-v2
   variants:
     - model: qwopus3.8-27b-flash-v2-q8
@@ -33574,6 +33574,150 @@
     - filename: minicpm-v-4_6-mmproj-f16.gguf
       sha256: ca931d861d0801d9003e50697cd764721a334107c0e0415a51168ee1938462de
       uri: huggingface://openbmb/MiniCPM-V-4.6-gguf/mmproj-model-f16.gguf
+- name: minicpm-v-4_7-1b-q4
+  url: github:mudler/LocalAI/gallery/qwen3.yaml@master
+  urls:
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf
+  description: |
+    MiniCPM-V 4.7 1B is OpenBMB's compact vision-language model for
+    text chat and image understanding. This entry uses the official
+    Q4_K_M GGUF weights and F16 vision projector through llama.cpp,
+    with an 8,192-token default context.
+  license: apache-2.0
+  icon: https://avatars.githubusercontent.com/u/89920203
+  tags:
+    - llm
+    - multimodal
+    - vision
+    - gguf
+    - cpu
+    - gpu
+  variants:
+    - model: minicpm-v-4_7-1b-q5
+    - model: minicpm-v-4_7-1b-q6
+    - model: minicpm-v-4_7-1b-q8
+  overrides:
+    backend: llama-cpp
+    context_size: 8192
+    known_usecases:
+      - chat
+      - vision
+    mmproj: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+    parameters:
+      model: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q4_K_M.gguf
+  files:
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q4_K_M.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/MiniCPM-V-4_7-1B-Q4_K_M.gguf
+      sha256: 588c6c94c82f756b86dba35c42ed9ba9ec187d65824eb52f039c347df563e63d
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/mmproj-model-f16.gguf
+      sha256: fb9cc047a3cdad5317fd8433a4aeda2d22f00f02ca4bd93b34ad84165b25a900
+- name: minicpm-v-4_7-1b-q5
+  url: github:mudler/LocalAI/gallery/qwen3.yaml@master
+  urls:
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf
+  description: |
+    MiniCPM-V 4.7 1B is OpenBMB's compact vision-language model for
+    text chat and image understanding. This entry uses the official
+    Q5_K_M GGUF weights and F16 vision projector through llama.cpp,
+    with an 8,192-token default context.
+  license: apache-2.0
+  icon: https://avatars.githubusercontent.com/u/89920203
+  tags:
+    - llm
+    - multimodal
+    - vision
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    context_size: 8192
+    known_usecases:
+      - chat
+      - vision
+    mmproj: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+    parameters:
+      model: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q5_K_M.gguf
+  files:
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q5_K_M.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/MiniCPM-V-4_7-1B-Q5_K_M.gguf
+      sha256: ff7cf8926c8565b8d9e2ebfef8a5dd4cc8a2f34dc8b3c5b3eaa55fdc9e8b0a01
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/mmproj-model-f16.gguf
+      sha256: fb9cc047a3cdad5317fd8433a4aeda2d22f00f02ca4bd93b34ad84165b25a900
+- name: minicpm-v-4_7-1b-q6
+  url: github:mudler/LocalAI/gallery/qwen3.yaml@master
+  urls:
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf
+  description: |
+    MiniCPM-V 4.7 1B is OpenBMB's compact vision-language model for
+    text chat and image understanding. This entry uses the official
+    Q6_K GGUF weights and F16 vision projector through llama.cpp,
+    with an 8,192-token default context.
+  license: apache-2.0
+  icon: https://avatars.githubusercontent.com/u/89920203
+  tags:
+    - llm
+    - multimodal
+    - vision
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    context_size: 8192
+    known_usecases:
+      - chat
+      - vision
+    mmproj: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+    parameters:
+      model: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q6_K.gguf
+  files:
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q6_K.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/MiniCPM-V-4_7-1B-Q6_K.gguf
+      sha256: ec9b0f9e041e7ca52a93cb2b7d98a439ac8bc70d0247cd33c03a9ae755e6a593
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/mmproj-model-f16.gguf
+      sha256: fb9cc047a3cdad5317fd8433a4aeda2d22f00f02ca4bd93b34ad84165b25a900
+- name: minicpm-v-4_7-1b-q8
+  url: github:mudler/LocalAI/gallery/qwen3.yaml@master
+  urls:
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B
+    - https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf
+  description: |
+    MiniCPM-V 4.7 1B is OpenBMB's compact vision-language model for
+    text chat and image understanding. This entry uses the official
+    Q8_0 GGUF weights and F16 vision projector through llama.cpp,
+    with an 8,192-token default context.
+  license: apache-2.0
+  icon: https://avatars.githubusercontent.com/u/89920203
+  tags:
+    - llm
+    - multimodal
+    - vision
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    context_size: 8192
+    known_usecases:
+      - chat
+      - vision
+    mmproj: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+    parameters:
+      model: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q8_0.gguf
+  files:
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/MiniCPM-V-4_7-1B-Q8_0.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/MiniCPM-V-4_7-1B-Q8_0.gguf
+      sha256: 2b83d8dfcd664c4dd9b9cfbe8dbd160782f2c6c362ca773758edc2dbc31420d7
+    - filename: llama-cpp/models/minicpm-v-4_7-1b/mmproj-model-f16.gguf
+      uri: https://huggingface.co/openbmb/MiniCPM-V-4.7-1B-gguf/resolve/59cd286146b6ce70f818508ccf512e11438d8957/mmproj-model-f16.gguf
+      sha256: fb9cc047a3cdad5317fd8433a4aeda2d22f00f02ca4bd93b34ad84165b25a900
 - &minicpm5-2b
   name: minicpm5-2b
   url: github:mudler/LocalAI/gallery/virtual.yaml@master
@@ -38401,6 +38545,9 @@
 - name: embeddinggemma-2
   variants:
     - model: embeddinggemma-2-bf16
+    - model: embeddinggemma-2-ud-q4-k-xl
+    - model: embeddinggemma-2-ud-q5-k-xl
+    - model: embeddinggemma-2-ud-q6-k-xl
   url: github:mudler/LocalAI/gallery/virtual.yaml@master
   urls:
     - https://huggingface.co/google/embeddinggemma-2
@@ -38458,6 +38605,93 @@
     - filename: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-BF16.gguf
       sha256: 68bae29d62fb8c7d23e98d21fd4662753ddd636e6b62b8a70dfe059a9844f216
       uri: https://huggingface.co/ggml-org/embeddinggemma-2-GGUF/resolve/bfcd298762cc34d0357ece5ebdd31791a3a374d8/embeddinggemma-2-BF16.gguf
+- name: embeddinggemma-2-ud-q4-k-xl
+  url: github:mudler/LocalAI/gallery/virtual.yaml@master
+  urls:
+    - https://huggingface.co/google/embeddinggemma-2
+    - https://huggingface.co/unsloth/embeddinggemma-2-GGUF
+  description: |
+    EmbeddingGemma 2 is Google's multilingual embedding model.
+    This Unsloth UD-Q4_K_XL GGUF serves the 270M-parameter text backbone through llama.cpp
+    and produces 768-dimensional embeddings for retrieval and semantic similarity.
+    This entry supports text input with an 8192-token context.
+    Use the model's task prefixes for queries and documents.
+  license: apache-2.0
+  tags:
+    - embeddings
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    embeddings: true
+    context_size: 8192
+    known_usecases:
+      - embeddings
+    parameters:
+      model: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q4_K_XL.gguf
+  files:
+    - filename: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q4_K_XL.gguf
+      sha256: ea905fd08e8061db77a0031cbb5096d459d7cfd2bdd0ad2ba66e483f16719493
+      uri: https://huggingface.co/unsloth/embeddinggemma-2-GGUF/resolve/031f0d4b35536f69ab3509d4893c923264fcf253/embeddinggemma-2-UD-Q4_K_XL.gguf
+- name: embeddinggemma-2-ud-q5-k-xl
+  url: github:mudler/LocalAI/gallery/virtual.yaml@master
+  urls:
+    - https://huggingface.co/google/embeddinggemma-2
+    - https://huggingface.co/unsloth/embeddinggemma-2-GGUF
+  description: |
+    EmbeddingGemma 2 is Google's multilingual embedding model.
+    This Unsloth UD-Q5_K_XL GGUF serves the 270M-parameter text backbone through llama.cpp
+    and produces 768-dimensional embeddings for retrieval and semantic similarity.
+    This entry supports text input with an 8192-token context.
+    Use the model's task prefixes for queries and documents.
+  license: apache-2.0
+  tags:
+    - embeddings
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    embeddings: true
+    context_size: 8192
+    known_usecases:
+      - embeddings
+    parameters:
+      model: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q5_K_XL.gguf
+  files:
+    - filename: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q5_K_XL.gguf
+      sha256: a9d7a3b7eb421113f05e964e10882676f10fff83811b7876d5bb983db7c7ac41
+      uri: https://huggingface.co/unsloth/embeddinggemma-2-GGUF/resolve/031f0d4b35536f69ab3509d4893c923264fcf253/embeddinggemma-2-UD-Q5_K_XL.gguf
+- name: embeddinggemma-2-ud-q6-k-xl
+  url: github:mudler/LocalAI/gallery/virtual.yaml@master
+  urls:
+    - https://huggingface.co/google/embeddinggemma-2
+    - https://huggingface.co/unsloth/embeddinggemma-2-GGUF
+  description: |
+    EmbeddingGemma 2 is Google's multilingual embedding model.
+    This Unsloth UD-Q6_K_XL GGUF serves the 270M-parameter text backbone through llama.cpp
+    and produces 768-dimensional embeddings for retrieval and semantic similarity.
+    This entry supports text input with an 8192-token context.
+    Use the model's task prefixes for queries and documents.
+  license: apache-2.0
+  tags:
+    - embeddings
+    - gguf
+    - cpu
+    - gpu
+  overrides:
+    backend: llama-cpp
+    embeddings: true
+    context_size: 8192
+    known_usecases:
+      - embeddings
+    parameters:
+      model: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q6_K_XL.gguf
+  files:
+    - filename: llama-cpp/models/embeddinggemma-2/embeddinggemma-2-UD-Q6_K_XL.gguf
+      sha256: dc84f042bc3ffbe6122b3b38b2fb299d66f5f37b276c9d458db85d4a4f1e6ba3
+      uri: https://huggingface.co/unsloth/embeddinggemma-2-GGUF/resolve/031f0d4b35536f69ab3509d4893c923264fcf253/embeddinggemma-2-UD-Q6_K_XL.gguf
 - name: embeddinggemma-300m
   url: github:mudler/LocalAI/gallery/virtual.yaml@master
   urls:
