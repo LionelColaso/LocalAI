@@ -24,6 +24,7 @@
     nvidia-l4t-cuda-12: nvidia-l4t-arm64-llama-cpp
     nvidia-l4t-cuda-13: cuda13-nvidia-l4t-arm64-llama-cpp
     vulkan: vulkan-llama-cpp
+    windows: windows-llama-cpp
   channel: latest
   description: |
     LLM inference in C/C++
@@ -4030,6 +4031,7 @@
     nvidia-l4t-cuda-12: nvidia-l4t-arm64-llama-cpp-development
     nvidia-l4t-cuda-13: cuda13-nvidia-l4t-arm64-llama-cpp-development
     vulkan: vulkan-llama-cpp-development
+    windows: windows-llama-cpp-development
   channel: development
   description: |
     LLM inference in C/C++
