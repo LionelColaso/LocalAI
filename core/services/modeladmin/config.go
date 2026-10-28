@@ -313,7 +313,7 @@ func (s *ConfigService) editYAML(ctx context.Context, name string, body []byte) 
 		if err := utils.VerifyPath(req.Name+".yaml", modelsPath); err != nil {
 			return nil, fmt.Errorf("%w: %v", ErrPathNotTrusted, err)
 		}
-		if _, err := os.Stat(newConfigPath); err == nil {
+		if _, err := os.Stat(filepath.FromSlash(newConfigPath)); err == nil {
 			return nil, fmt.Errorf("%w: a config file for %q already exists on disk", ErrConflict, req.Name)
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return nil, fmt.Errorf("stat new config: %w", err)
@@ -335,8 +335,8 @@ func (s *ConfigService) editYAML(ctx context.Context, name string, body []byte) 
 			// Move the gallery metadata file so the delete flow can still find it.
 			oldGalleryPath := filepath.Join(modelsPath, gallery.GalleryFileName(name))
 			newGalleryPath := filepath.Join(modelsPath, gallery.GalleryFileName(req.Name))
-			if _, err := os.Stat(oldGalleryPath); err == nil {
-				if err := os.Rename(oldGalleryPath, newGalleryPath); err != nil {
+			if _, err := os.Stat(filepath.FromSlash(oldGalleryPath)); err == nil {
+				if err := os.Rename(filepath.FromSlash(oldGalleryPath), filepath.FromSlash(newGalleryPath)); err != nil {
 					return fmt.Errorf("rename gallery metadata: %w", err)
 				}
 			}

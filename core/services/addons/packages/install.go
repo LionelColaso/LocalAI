@@ -101,7 +101,7 @@ func (i *Installer) Stage(ctx context.Context, r catalog.Release, progress func(
 	if e = os.MkdirAll(root, 0700); e != nil {
 		return out, e
 	}
-	info, e := os.Lstat(root)
+	info, e := os.Lstat(filepath.FromSlash(root))
 	if e != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || info.Mode().Perm()&0077 != 0 {
 		return out, ErrPackage
 	}
@@ -222,7 +222,7 @@ func (i *Installer) Stage(ctx context.Context, r catalog.Release, progress func(
 		}
 	}
 	manifestPath := filepath.Join(dir, "manifest.json")
-	manifestInfo, e := os.Lstat(manifestPath)
+	manifestInfo, e := os.Lstat(filepath.FromSlash(manifestPath))
 	if e != nil || !manifestInfo.Mode().IsRegular() || manifestInfo.Size() > contract.DefaultLimits().ManifestBytes {
 		return out, ErrPackage
 	}
@@ -248,7 +248,7 @@ func (i *Installer) Stage(ctx context.Context, r catalog.Release, progress func(
 		assets = append(assets, u.CSS...)
 	}
 	for _, asset := range assets {
-		info, e := os.Lstat(filepath.Join(dir, filepath.FromSlash(asset)))
+		info, e := os.Lstat(filepath.FromSlash(filepath.Join(dir, filepath.FromSlash(asset))))
 		if e != nil || !info.Mode().IsRegular() || (asset == m.Executable && info.Mode()&0100 == 0) {
 			return out, ErrPackage
 		}
@@ -259,7 +259,7 @@ func (i *Installer) Stage(ctx context.Context, r catalog.Release, progress func(
 			return out, e
 		}
 	}
-	if _, e = os.Lstat(filepath.Join(dir, "receipt.json")); !os.IsNotExist(e) {
+	if _, e = os.Lstat(filepath.FromSlash(filepath.Join(dir, "receipt.json"))); !os.IsNotExist(e) {
 		return out, ErrPackage
 	}
 	if e = ctx.Err(); e != nil {

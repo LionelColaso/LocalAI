@@ -135,7 +135,7 @@ func (r *Recovery) runPurge(ctx context.Context, addonID string, j journalRecord
 		return 0, err
 	}
 	move := func(src, name string) error {
-		if _, err := os.Lstat(src); err != nil {
+		if _, err := os.Lstat(filepath.FromSlash(src)); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				return nil
 			}
@@ -288,9 +288,9 @@ func (r *Recovery) reconcileRestore(ctx context.Context, addonID string, j journ
 		}
 		return r.clearJournal(addonID)
 	}
-	_, stagedErr := os.Lstat(j.Staged)
-	_, dataErr := os.Lstat(r.dataDir(addonID))
-	_, prevErr := os.Lstat(j.Prev)
+	_, stagedErr := os.Lstat(filepath.FromSlash(j.Staged))
+	_, dataErr := os.Lstat(filepath.FromSlash(r.dataDir(addonID)))
+	_, prevErr := os.Lstat(filepath.FromSlash(j.Prev))
 	switch j.Phase {
 	case "staging":
 		return undo()

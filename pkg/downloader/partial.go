@@ -25,7 +25,7 @@ const PartialFileSuffix = ".partial"
 // A missing root is not an error (nothing to clean). Unreadable entries are
 // skipped so one bad file does not abort the whole sweep.
 func CleanupStalePartialFiles(root string, olderThan time.Duration) (int, error) {
-	if _, err := os.Stat(root); err != nil {
+	if _, err := os.Stat(filepath.FromSlash(root)); err != nil {
 		if os.IsNotExist(err) {
 			return 0, nil
 		}
@@ -58,7 +58,7 @@ func CleanupStalePartialFiles(root string, olderThan time.Duration) (int, error)
 
 	removed := 0
 	for _, path := range stale {
-		if err := os.Remove(path); err != nil {
+		if err := os.Remove(filepath.FromSlash(path)); err != nil {
 			xlog.Warn("failed to remove stale partial download", "file", path, "error", err)
 			continue
 		}

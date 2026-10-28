@@ -18,7 +18,7 @@ import (
 // elsewhere.
 func resolveLauncher(grpcProcess, workDir string, args []string) (processName string, processArgs []string, err error) {
 	runScript := filepath.Join(workDir, "run.ps1")
-	if _, statErr := os.Stat(runScript); statErr != nil {
+	if _, statErr := os.Stat(filepath.FromSlash(runScript)); statErr != nil {
 		return filepath.Base(grpcProcess), args, nil
 	}
 	// os.StartProcess resolves the executable against ProcAttr.Dir on Windows,

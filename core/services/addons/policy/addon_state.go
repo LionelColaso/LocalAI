@@ -507,7 +507,7 @@ func peek(dir string) (*document, error) {
 		return nil, err
 	}
 	defer func() { _ = lock.Close() }()
-	if _, err = os.Stat(filepath.Join(dir, fileName)); errors.Is(err, os.ErrNotExist) {
+	if _, err = os.Stat(filepath.FromSlash(filepath.Join(dir, fileName))); errors.Is(err, os.ErrNotExist) {
 		return &document{Version: 1, Resources: map[string]*record{}}, nil
 	}
 	return load(dir)

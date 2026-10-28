@@ -294,7 +294,7 @@ func (s *Supervisor) launch(ctx context.Context, pkg packages.PackageReceipt, ge
 	if e != nil || resolved != path {
 		return nil, ErrRuntime
 	}
-	info, e := os.Stat(path)
+	info, e := os.Stat(filepath.FromSlash(path))
 	if e != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 {
 		return nil, ErrRuntime
 	}
@@ -356,7 +356,7 @@ func (s *Supervisor) launch(ctx context.Context, pkg packages.PackageReceipt, ge
 		if os.MkdirAll(dataDir, 0o700) != nil {
 			return nil, ErrRuntime
 		}
-		if fi, e := os.Lstat(dataDir); e != nil || !fi.IsDir() {
+		if fi, e := os.Lstat(filepath.FromSlash(dataDir)); e != nil || !fi.IsDir() {
 			return nil, ErrRuntime
 		}
 	}

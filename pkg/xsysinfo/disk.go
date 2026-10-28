@@ -56,7 +56,7 @@ func nearestExistingDir(path string) (string, error) {
 		return "", fmt.Errorf("resolving %s: %w", path, err)
 	}
 	for {
-		if _, err := os.Stat(abs); err == nil {
+		if _, err := os.Stat(filepath.FromSlash(abs)); err == nil {
 			return abs, nil
 		}
 		parent := filepath.Dir(abs)

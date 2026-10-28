@@ -244,7 +244,7 @@ func copyData(ctx context.Context, src, dst, prefix string, step func() error) (
 		name := d.Name()
 		for _, suffix := range []string{"-wal", "-shm", "-journal"} {
 			if base, ok := strings.CutSuffix(p, suffix); ok && strings.HasSuffix(name, suffix) {
-				if info, e := os.Lstat(base); e == nil && info.Mode().IsRegular() && isSQLite(base) {
+				if info, e := os.Lstat(filepath.FromSlash(base)); e == nil && info.Mode().IsRegular() && isSQLite(base) {
 					return nil
 				}
 			}

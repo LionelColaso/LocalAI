@@ -276,7 +276,7 @@ func (r *Recovery) previousPath(addonID, op string) string {
 // made under a partial name and renamed when it is complete and verified, so
 // that the existence of staged says it can be swapped in.
 func (r *Recovery) stageBackup(ctx context.Context, addonID, backupDir string, m Manifest, staged string) error {
-	if _, err := os.Lstat(staged); err == nil {
+	if _, err := os.Lstat(filepath.FromSlash(staged)); err == nil {
 		return nil
 	}
 	partial := staged + ".partial"
@@ -347,11 +347,11 @@ func copyTree(ctx context.Context, src, dst string) error {
 // one as the recovery copy. It can be repeated after a crash at any point.
 func (r *Recovery) swapIn(addonID, staged, prev string) error {
 	data := r.dataDir(addonID)
-	_, serr := os.Lstat(staged)
+	_, serr := os.Lstat(filepath.FromSlash(staged))
 	staging := serr == nil
-	_, derr := os.Lstat(data)
+	_, derr := os.Lstat(filepath.FromSlash(data))
 	hasData := derr == nil
-	_, perr := os.Lstat(prev)
+	_, perr := os.Lstat(filepath.FromSlash(prev))
 	hasPrev := perr == nil
 	switch {
 	case !staging && hasData && hasPrev:
@@ -408,7 +408,7 @@ func (r *Recovery) abortRestore(addonID string, j journalRecord, cause error) er
 	}
 	if j.Phase == "swap" {
 		// Either the swap did not start or it finished; ask the file system.
-		if _, err := os.Lstat(j.Staged); err != nil {
+		if _, err := os.Lstat(filepath.FromSlash(j.Staged)); err != nil {
 			return fmt.Errorf("restore stopped after the swap: %w", cause)
 		}
 	}
@@ -446,7 +446,7 @@ func (r *Recovery) finishRestore(ctx context.Context, addonID, backupDir string,
 		rc.LostWrites = j.Receipt.LostWrites
 	}
 	rc.PreviousCopy = filepath.Base(j.Prev)
-	if _, err := os.Lstat(j.Prev); err != nil {
+	if _, err := os.Lstat(filepath.FromSlash(j.Prev)); err != nil {
 		rc.PreviousCopy = ""
 	}
 	rc.Warnings = restoreWarnings(rc)

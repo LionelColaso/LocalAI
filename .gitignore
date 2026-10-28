@@ -143,3 +143,6 @@ formal-verification/out/
 /backend/go/gemxcpp/package/
 /backend/go/gemxcpp/gemxcpp
 addons/internal/uibuild/test/*/dist
+
+# Ignore Cache Folder
+/cache

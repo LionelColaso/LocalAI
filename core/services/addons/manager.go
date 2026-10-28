@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/mudler/LocalAI/core/services/addons/apps"
@@ -595,7 +594,7 @@ func (m *Manager) cleanStages() error {
 				return nil
 			}
 			// Descriptor chmod avoids following a link swapped in after WalkDir.
-			f, err := root.OpenFile(path, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_DIRECTORY, 0)
+			f, err := root.OpenFile(path, os.O_RDONLY, 0)
 			if err != nil {
 				return err
 			}
@@ -613,11 +612,23 @@ func (m *Manager) cleanStages() error {
 // Pin each ancestor and reject links, including the package root, before any
 // enumeration or mutation. Root operations keep later path races contained.
 func openPackageRoot(path string) (*os.Root, error) {
-	root, err := os.OpenRoot(string(filepath.Separator))
+	// On Windows, extract the volume name (drive letter) to open the correct root.
+	vol := filepath.VolumeName(path)
+	rootPath := string(filepath.Separator)
+	if vol != "" {
+		rootPath = vol + string(filepath.Separator)
+	}
+	root, err := os.OpenRoot(rootPath)
 	if err != nil {
 		return nil, err
 	}
-	for _, part := range strings.Split(strings.TrimPrefix(filepath.Clean(path), string(filepath.Separator)), string(filepath.Separator)) {
+	// Remove the volume name from the path before splitting.
+	remaining := strings.TrimPrefix(filepath.Clean(path), vol)
+	remaining = strings.TrimPrefix(remaining, string(filepath.Separator))
+	for _, part := range strings.Split(remaining, string(filepath.Separator)) {
+		if part == "" {
+			continue
+		}
 		info, e := root.Lstat(part)
 		if e != nil {
 			_ = root.Close()

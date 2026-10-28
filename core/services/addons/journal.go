@@ -39,7 +39,7 @@ func durableWrite(path string, b []byte) error {
 	if closeErr != nil {
 		return closeErr
 	}
-	if e = os.Rename(f.Name(), path); e != nil {
+	if e = os.Rename(filepath.FromSlash(f.Name()), filepath.FromSlash(path)); e != nil {
 		return e
 	}
 	d, e := os.Open(filepath.Dir(path))
@@ -67,7 +67,8 @@ func (m *Manager) persist(phase string) error {
 	return nil
 }
 func (m *Manager) load() error {
-	b, e := os.ReadFile(filepath.Join(m.config.Root, "journal.json"))
+	path := filepath.FromSlash(filepath.Join(m.config.Root, "journal.json"))
+	b, e := os.ReadFile(path)
 	if os.IsNotExist(e) {
 		m.journal = journal{Version: 1, Addons: map[string]Status{}, Operations: map[string]journalOperation{}}
 		return nil

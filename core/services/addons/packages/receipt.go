@@ -74,7 +74,7 @@ func (i *Installer) Commit(ctx context.Context, s StagedPackage) (PackageReceipt
 	// The random basename is reserved by Stage in this private root; renaming never
 	// targets an existing version or deletes a previously published package.
 	dest := filepath.Join(filepath.Dir(st.dir), "package-"+filepath.Base(st.dir))
-	if _, e := os.Lstat(dest); !os.IsNotExist(e) {
+	if _, e := os.Lstat(filepath.FromSlash(dest)); !os.IsNotExist(e) {
 		return PackageReceipt{}, ErrPackage
 	}
 	receipt := st.receipt

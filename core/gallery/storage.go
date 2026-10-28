@@ -103,7 +103,7 @@ func BuildStorageIndex(systemState *system.SystemState) (*StorageIndex, error) {
 			// the normal state of a hand-written config, not a broken
 			// reference — only a present one counts as payload.
 			if strings.HasPrefix(filepath.Base(f), "._gallery_") {
-				if _, err := os.Stat(f); err != nil {
+				if _, err := os.Stat(filepath.FromSlash(f)); err != nil {
 					continue
 				}
 			}
@@ -175,7 +175,7 @@ func BuildStorageIndex(systemState *system.SystemState) (*StorageIndex, error) {
 // pathSize sizes a referenced path: a plain stat for files, a walk for
 // artifact snapshot directories (multi-file models resolve to a directory).
 func pathSize(p string) (int64, error) {
-	st, err := os.Stat(p)
+	st, err := os.Stat(filepath.FromSlash(p))
 	if err != nil {
 		return 0, err
 	}
