@@ -6,27 +6,22 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"golang.org/x/sys/windows"
 )
 
 // grantEveryone adds an entry that lets every user read path, the way an
 // inherited list of a shared folder does.
-func grantEveryone(t *testing.T, path string) {
-	t.Helper()
+func grantEveryone(path string) {
+	GinkgoHelper()
 	everyone, err := windows.CreateWellKnownSid(windows.WinWorldSid)
-	if err != nil {
-		t.Fatal(err)
-	}
+	Expect(err).ToNot(HaveOccurred())
 	sd, err := windows.GetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION)
-	if err != nil {
-		t.Fatal(err)
-	}
+	Expect(err).ToNot(HaveOccurred())
 	old, _, err := sd.DACL()
-	if err != nil {
-		t.Fatal(err)
-	}
+	Expect(err).ToNot(HaveOccurred())
 	acl, err := windows.ACLFromEntries([]windows.EXPLICIT_ACCESS{{
 		AccessPermissions: windows.GENERIC_READ,
 		AccessMode:        windows.GRANT_ACCESS,
@@ -37,90 +32,68 @@ func grantEveryone(t *testing.T, path string) {
 			TrusteeValue: windows.TrusteeValueFromSID(everyone),
 		},
 	}}, old)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := windows.SetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION, nil, nil, acl, nil); err != nil {
-		t.Fatal(err)
-	}
+	Expect(err).ToNot(HaveOccurred())
+	Expect(windows.SetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION, nil, nil, acl, nil)).To(Succeed())
 }
 
-func TestWindowsRestrictAndCheck(t *testing.T) {
-	file := filepath.Join(t.TempDir(), "key")
-	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	grantEveryone(t, file)
-	if err := Check(file); !errors.Is(err, ErrNotPrivate) {
-		t.Fatalf("Check with an Everyone entry = %v, want ErrNotPrivate", err)
-	}
-	if err := Restrict(file); err != nil {
-		t.Fatal(err)
-	}
-	if err := Check(file); err != nil {
-		t.Fatalf("Check after Restrict = %v", err)
-	}
-	if b, err := os.ReadFile(file); err != nil || string(b) != "x" {
-		t.Fatalf("the owner cannot read the file after Restrict: %q, %v", b, err)
-	}
-}
+var _ = Describe("fsperm on Windows", func() {
+	It("restricts a file and checks it", func() {
+		file := filepath.Join(GinkgoT().TempDir(), "key")
+		Expect(os.WriteFile(file, []byte("x"), 0o600)).To(Succeed())
+		grantEveryone(file)
 
-func TestWindowsCheckOrRestrictRepairs(t *testing.T) {
-	file := filepath.Join(t.TempDir(), "key")
-	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	grantEveryone(t, file)
-	restricted, err := CheckOrRestrict(file)
-	if err != nil || !restricted {
-		t.Fatalf("CheckOrRestrict = %v, %v; want true, nil", restricted, err)
-	}
-	if err := Check(file); err != nil {
-		t.Fatal(err)
-	}
-}
+		err := Check(file)
+		Expect(errors.Is(err, ErrNotPrivate)).To(BeTrue())
 
-func TestWindowsMkdirAllAndWriteFile(t *testing.T) {
-	dir := filepath.Join(t.TempDir(), "state")
-	if err := MkdirAll(dir); err != nil {
-		t.Fatal(err)
-	}
-	if err := Check(dir); err != nil {
-		t.Fatalf("Check(folder) = %v", err)
-	}
-	file := filepath.Join(dir, "secret")
-	if err := WriteFile(file, []byte("s"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := Check(file); err != nil {
-		t.Fatalf("Check(file) = %v", err)
-	}
-}
+		Expect(Restrict(file)).To(Succeed())
+		Expect(Check(file)).To(Succeed())
 
-func TestWindowsIsExecutable(t *testing.T) {
-	if !IsExecutable(`C:\x\llama.exe`, 0o666) || IsExecutable(`C:\x\run.sh`, 0o777) {
-		t.Fatal("IsExecutable does not follow the extension rule")
-	}
-}
+		b, err := os.ReadFile(file)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(string(b)).To(Equal("x"))
+	})
 
-func TestWindowsRequirePrivateRepairs(t *testing.T) {
-	file := filepath.Join(t.TempDir(), "key")
-	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	grantEveryone(t, file)
-	info, err := os.Stat(file)
-	if err != nil {
-		t.Fatal(err)
-	}
-	restricted, err := RequirePrivate(file, info)
-	if err != nil || !restricted {
-		t.Fatalf("RequirePrivate = %v, %v; want true, nil", restricted, err)
-	}
-	if err := Check(file); err != nil {
-		t.Fatal(err)
-	}
-	if restricted, err := RequirePrivate(file, info); err != nil || restricted {
-		t.Fatalf("RequirePrivate on a private file = %v, %v; want false, nil", restricted, err)
-	}
-}
+	It("repairs a file that other users can read", func() {
+		file := filepath.Join(GinkgoT().TempDir(), "key")
+		Expect(os.WriteFile(file, []byte("x"), 0o600)).To(Succeed())
+		grantEveryone(file)
+
+		restricted, err := CheckOrRestrict(file)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(restricted).To(BeTrue())
+		Expect(Check(file)).To(Succeed())
+	})
+
+	It("creates a private folder and writes a file", func() {
+		dir := filepath.Join(GinkgoT().TempDir(), "state")
+		Expect(MkdirAll(dir)).To(Succeed())
+		Expect(Check(dir)).To(Succeed())
+
+		file := filepath.Join(dir, "secret")
+		Expect(WriteFile(file, []byte("s"), 0o600)).To(Succeed())
+		Expect(Check(file)).To(Succeed())
+	})
+
+	It("follows the extension rule for executables", func() {
+		Expect(IsExecutable(`C:\x\llama.exe`, 0o666)).To(BeTrue())
+		Expect(IsExecutable(`C:\x\run.sh`, 0o777)).To(BeFalse())
+	})
+
+	It("repairs a file that needs to be private", func() {
+		file := filepath.Join(GinkgoT().TempDir(), "key")
+		Expect(os.WriteFile(file, []byte("x"), 0o600)).To(Succeed())
+		grantEveryone(file)
+
+		info, err := os.Stat(file)
+		Expect(err).ToNot(HaveOccurred())
+
+		restricted, err := RequirePrivate(file, info)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(restricted).To(BeTrue())
+		Expect(Check(file)).To(Succeed())
+
+		restricted, err = RequirePrivate(file, info)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(restricted).To(BeFalse())
+	})
+})
